@@ -4,22 +4,20 @@ const { ccclass, property } = _decorator;
 @ccclass("gamegrid")
 export class gamegrid extends Component {
   @property
-  gridSize: number = 40; // 每个格子的大小
-
-  @property
-  marginX: number = 200; // 左右空白宽度
-
-  @property
-  marginY: number = 400; // 上下空白高度
-
-  @property
   lineWidth: number = 2; // 网格线宽度
 
   @property
-  gridColor: Color = new Color(0, 0, 0, 255); // 网格线颜色
+  gridColor: Color = new Color(0, 0, 255, 255); // 网格线颜色
 
   @property
   backgroundColor: Color = new Color(200, 200, 200, 255); // 背景颜色
+
+  @property
+  gridSize: number = 40; // 每个格子的大小
+  @property
+  public columns: number = 5; // 列数
+  @property
+  public rows: number = 5; // 行数
 
   start() {
     console.log("playercontroller start");
@@ -28,23 +26,12 @@ export class gamegrid extends Component {
 
     console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
 
-    // 计算中间网格区域的起点（向内偏移到 gridSize 的整数倍）
-    const startX =
-      Math.ceil((-screenWidth / 2 + this.marginX) / this.gridSize) *
-        this.gridSize -
-      (screenWidth % this.gridSize);
-    const startY =
-      Math.ceil((-screenHeight / 2 + this.marginY) / this.gridSize) *
-        this.gridSize -
-      100;
+    const startX = (-this.columns / 2) * this.gridSize;
+    const startY = (-this.rows / 2) * this.gridSize;
 
     // 计算总宽高范围（向下取整为 gridSize 的整数倍）
-    const totalWidth =
-      Math.floor((screenWidth - 2 * this.marginX) / this.gridSize) *
-      this.gridSize;
-    const totalHeight =
-      Math.floor((screenHeight - 2 * this.marginY) / this.gridSize) *
-      this.gridSize;
+    const totalWidth = this.columns * this.gridSize;
+    const totalHeight = this.rows * this.gridSize;
 
     console.log(`Start X: ${startX}, Start Y: ${startY}`);
     console.log(`Total Width: ${totalWidth}, Total Height: ${totalHeight}`);
@@ -54,16 +41,6 @@ export class gamegrid extends Component {
     if (!graphics) {
       graphics = this.node.addComponent(Graphics);
     }
-
-    // 绘制背景覆盖整个屏幕
-    graphics.fillColor = this.backgroundColor;
-    graphics.rect(
-      -screenWidth / 2,
-      -screenHeight / 2,
-      screenWidth,
-      screenHeight
-    );
-    graphics.fill();
 
     // 设置网格线宽和颜色
     graphics.lineWidth = this.lineWidth;
