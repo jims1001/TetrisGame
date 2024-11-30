@@ -21,10 +21,6 @@ export class gamegrid extends Component {
 
   start() {
     console.log("playercontroller start");
-    const screenWidth = view.getVisibleSize().width;
-    const screenHeight = view.getVisibleSize().height;
-
-    console.log(`Screen Width: ${screenWidth}, Screen Height: ${screenHeight}`);
 
     const startX = (-this.columns / 2) * this.gridSize;
     const startY = (-this.rows / 2) * this.gridSize;
