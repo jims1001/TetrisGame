@@ -1,0 +1,38 @@
+# Ignore settings, logs, and build files
+local/
+temp/
+library/
+build/
+log/
+packages/
+node_modules/
+
+# Ignore Cocos Creator generated files
+.settings/
+.DS_Store
+
+# Ignore system-specific files
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore macOS-specific files
+*.DS_Store
+
+# Ignore IDE-specific files
+.idea/
+*.iml
+
+# Ignore compiled files
+*.log
+*.tmp
+
+# Ignore other backups and temporary files
+*.bak
+*.swp
+*.lock
+
+

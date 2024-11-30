@@ -1,0 +1,94 @@
+// Effect Syntax Guide: https://docs.cocos.com/creator/manual/zh/shader/index.html
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: legacy/main-functions/general-vs:vert # builtin header
+      frag: unlit-fs:frag
+      properties: &props
+         mainTexture:    { value: white }
+         mainColor:      { value: [1, 1, 1, 1], editor: { type: color } }
+         u_blurRadius: { value: 0.5, editor: { type: float } } # 定义模糊半径属性
+         u_blurScale: { value: 1.0, editor: { type: float } }  # 定义模糊比例属性
+         u_texelSize : {value : [10,10], editor:{type: vect2}}
+
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <legacy/output>
+  in vec2 v_uv;
+  in vec3 v_position;
+  uniform Constant {
+    float u_blurRadius; // 模糊半径
+    float u_blurScale;  // 模糊强度
+    vec2 u_texelSize;
+        vec4 mainColor;
+  };
+
+  uniform sampler2D mainTexture;
+  
+
+  vec4 frag () {
+
+ vec4 color = vec4(0.0);
+
+      // 高斯核权重 (3x3)
+
+      float kernel[9];
+      kernel[0] = 0.0625; kernel[1] = 0.125; kernel[2] = 0.0625;
+      kernel[3] = 0.125;  kernel[4] = 0.25;  kernel[5] = 0.125;
+      kernel[6] = 0.0625; kernel[7] = 0.125; kernel[8] = 0.0625;
+
+      float kernelSum = 0.0;
+      for (int i = 0; i < 9; ++i) {
+          kernelSum += kernel[i];
+      }
+      // 确保总和为 1
+      if (abs(kernelSum - 1.0) > 0.001) {
+          for (int i = 0; i < 9; ++i) {
+              kernel[i] /= kernelSum; // 归一化
+          }
+      }
+
+      // 偏移计算 (3x3)
+      vec2 offsets[9];
+      offsets[0] = vec2(-1.0, -1.0) * u_texelSize * u_blurRadius;
+      offsets[1] = vec2( 0.0, -1.0) * u_texelSize * u_blurRadius;
+      offsets[2] = vec2( 1.0, -1.0) * u_texelSize * u_blurRadius;
+      offsets[3] = vec2(-1.0,  0.0) * u_texelSize * u_blurRadius;
+      offsets[4] = vec2( 0.0,  0.0) * u_texelSize * u_blurRadius;
+      offsets[5] = vec2( 1.0,  0.0) * u_texelSize * u_blurRadius;
+      offsets[6] = vec2(-1.0,  1.0) * u_texelSize * u_blurRadius;
+      offsets[7] = vec2( 0.0,  1.0) * u_texelSize * u_blurRadius;
+      offsets[8] = vec2( 1.0,  1.0) * u_texelSize * u_blurRadius;
+
+
+      vec4 sample1 = texture(mainTexture, v_uv + offsets[0] * u_blurScale);
+      vec4 sample2 = texture(mainTexture, v_uv + offsets[1] * u_blurScale);
+      vec4 sample3 = texture(mainTexture, v_uv + offsets[2] * u_blurScale);
+      vec4 sample4 = texture(mainTexture, v_uv + offsets[3] * u_blurScale);
+      vec4 sample5 = texture(mainTexture, v_uv + offsets[4] * u_blurScale);
+      vec4 sample6 = texture(mainTexture, v_uv + offsets[5] * u_blurScale);
+      vec4 sample7 = texture(mainTexture, v_uv + offsets[6] * u_blurScale);
+      vec4 sample8 = texture(mainTexture, v_uv + offsets[7] * u_blurScale);
+      vec4 sample9 = texture(mainTexture, v_uv + offsets[8] * u_blurScale);
+
+      color += sample1 * kernel[0];
+      color += sample2 * kernel[1];
+      color += sample3 * kernel[2];
+      color += sample4 * kernel[3];
+      color += sample5 * kernel[4];
+      color += sample6 * kernel[5];
+      color += sample7 * kernel[6];
+      color += sample8 * kernel[7];
+      color += sample9 * kernel[8];
+
+    // 返回最终颜色
+    return color;
+
+  }
+}%
+
+

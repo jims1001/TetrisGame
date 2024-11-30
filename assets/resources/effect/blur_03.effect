@@ -1,0 +1,141 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+        blurRadius: { value: 5.0 }
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+
+  in vec4 color;
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    #pragma builtin(local)
+    layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  #endif
+
+
+layout(std140) uniform MaterialUniforms {
+   float blurRadius; // 模糊半径参数
+};
+
+float weights[9];
+
+void initWeights() {
+    weights[0] = 0.0625;
+    weights[1] = 0.125;
+    weights[2] = 0.0625;
+    weights[3] = 0.125;
+    weights[4] = 0.25;
+    weights[5] = 0.125;
+    weights[6] = 0.0625;
+    weights[7] = 0.125;
+    weights[8] = 0.0625;
+}
+
+  vec4 frag () {
+    vec4 o = vec4(0.0, 0.0, 0.0, 1.0);
+
+    initWeights();
+
+      // 定义模糊核权重和偏移
+      const float offset = 1.0 / 512.0; // 假设纹理尺寸为 512x512，可根据实际调整
+      vec2 sampleUV;
+
+      // 手动展开模糊核的计算
+      sampleUV = uv0  + vec2(-1.0, -1.0)* blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[0];
+
+      sampleUV = uv0 + vec2( 0.0, -1.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[1];
+
+      sampleUV = uv0 + vec2( 1.0, -1.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[2];
+
+      sampleUV = uv0 + vec2(-1.0,  0.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[3];
+
+      sampleUV = uv0 + vec2( 0.0,  0.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[4];
+
+      sampleUV = uv0 + vec2( 1.0,  0.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[5];
+
+      sampleUV = uv0 + vec2(-1.0,  1.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[6];
+
+      sampleUV = uv0 + vec2( 0.0,  1.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[7];
+
+      sampleUV = uv0 + vec2( 1.0,  1.0) * blurRadius * offset;
+      o += texture(cc_spriteTexture, sampleUV) * weights[8];
+
+
+  
+
+
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%
