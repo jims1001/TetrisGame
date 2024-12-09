@@ -51,8 +51,8 @@ export class player extends Component {
   // 改变
   public onChange: (player: player, boundRect: Rect) => void = null;
 
-  // 是否可以移动
-  public onCanMove: (player: player) => boolean = null;
+  // 是否可以移动  1 左边 2 右边 -1 不处理
+  public onCanMove: (player: player, direction: number) => boolean = null;
 
   start() {
     input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
@@ -115,22 +115,17 @@ export class player extends Component {
   // 键盘事件
   onKeyDown(event) {
     let point = this.node.position;
-    const currentRotation = this.node.eulerAngles;
-
     // 如果没有选中 是不能进行操作的
     if (!this.isSelected) {
       return;
     }
 
-    // 表示超出边界了
-    if (point.x < this.leftEdge || point.x > this.rightEdge) {
-      return;
-    }
-
+    let direction = -1;
     switch (event.keyCode) {
       case 37:
         console.log("left");
         point = new Vec3(point.x - this.stepSize, point.y, point.z);
+        direction = 1;
         break;
       case 38:
         console.log("up");
@@ -142,22 +137,28 @@ export class player extends Component {
             this.node.eulerAngles.z + 90
           )
         );
-
-        // this.autoAlignAndRotateToGrid(this.stepSize);
+        direction = -1;
 
         break;
       case 39:
         point = new Vec3(point.x + this.stepSize, point.y, point.z);
+        direction = 2;
         console.log("right");
         break;
       case 40:
         console.log("down");
+        direction = -1;
         point = new Vec3(
           point.x,
           point.y - this.stepSize * this.stepSpeed,
           point.z
         );
         break;
+    }
+
+    // 如果没有设置 onCanMove 则不可移动 判断是否可以移动
+    if (this.onCanMove && !this.onCanMove(this, direction)) {
+      return;
     }
 
     this.node.setPosition(point);

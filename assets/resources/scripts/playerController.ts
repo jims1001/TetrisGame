@@ -10,10 +10,13 @@ import {
   UITransform,
   Rect,
   Size,
+  director,
 } from "cc";
 import {
   generateArray,
   generateGridCentersFromTopLeft,
+  getFirstColumnIndexes,
+  getLastColumnIndexes,
   getLastRowIndices,
   getRelativePosition,
   getRelativePositionFromCenter,
@@ -22,6 +25,7 @@ import {
   updateArrayValues,
 } from "./uitls/game";
 import { player } from "./player";
+import { GameManager } from "./gamemanager";
 const { ccclass, property } = _decorator;
 
 @ccclass("playercontroller")
@@ -48,17 +52,16 @@ export class playercontroller extends Component {
 
   public gridItems = []; // 存储格子
 
-  // 定义游戏格子的边界
-  public leftEdge: number = 0; // 左边界
-  public rightEdge: number = 0; // 右边界
-  public bottomEdge: number = 0; // 上边界
+  public leftEdgeIndexs: [number, number][];
+  public rightEdgeIndexs: [number, number][];
+  public lastVects: number[][];
 
   public columns: number = 16;
   public rows: number = 20;
   public gridSize: number = 40;
   public gameResultMap: any; // 保存游戏内容
   public gameVectors: Vec2[][] = []; // 保存游戏内容
-  public lastVects: number[][];
+
   public currentNode: Node = null; // 保存当前的活动的节点
 
   start() {
@@ -75,13 +78,15 @@ export class playercontroller extends Component {
     // 用于初始化数据
     this.gameResultMap = generateArray(this.rows, this.columns, 0);
 
-    // 设置边界
-    this.leftEdge = (-this.columns * this.gridSize) / 2;
-    this.rightEdge = (this.columns * this.gridSize) / 2;
-    this.bottomEdge = (-this.rows * this.gridSize) / 2;
+    this.leftEdgeIndexs = getFirstColumnIndexes(this.gameVectors);
+    this.rightEdgeIndexs = getLastColumnIndexes(this.gameVectors);
 
     // 初始化格子
     this.initItemNode();
+
+    GameManager.instance.onTimerTick = () => {
+      console.log("onTimerTick");
+    };
   }
 
   // 初始化网格
@@ -112,13 +117,10 @@ export class playercontroller extends Component {
 
   /// 初始化格子
   initItemNode() {
-    const gridItem1 = this.getGridItem(3, this.gameVectors[0][0]);
+    const gridItem1 = this.getGridItem(1, this.gameVectors[0][0]);
     this.gridNode.addChild(gridItem1);
     this.currentNode = gridItem1;
     const gridItemPlayer1 = this.getPlayerFromItem(gridItem1);
-    gridItemPlayer1.leftEdge = this.leftEdge;
-    gridItemPlayer1.rightEdge = this.rightEdge;
-    gridItemPlayer1.bottomEdge = this.bottomEdge;
     gridItemPlayer1.isSelected = true;
     gridItemPlayer1.onEnterButtomEdge = () => {
       console.log("onEnterButtomEdge");
@@ -162,6 +164,26 @@ export class playercontroller extends Component {
 
       // 判断是否是最后一行 // 如果是最后一行 则直接消失  // 并且把当前的二维数组相应的地方改为1
       console.log("indexPaths", indexPaths);
+    };
+
+    gridItemPlayer1.onCanMove = (currentPlayer, director) => {
+      console.log("currentPlayer", currentPlayer);
+
+      const currentIndexs = this.getIndexes(currentPlayer, this.gameVectors);
+
+      if (director == 1) {
+        if (hasIntersection2DClassic(this.leftEdgeIndexs, currentIndexs)) {
+          return false;
+        }
+      }
+
+      if (director == 2) {
+        if (hasIntersection2DClassic(this.rightEdgeIndexs, currentIndexs)) {
+          return false;
+        }
+      }
+
+      return true;
     };
   }
 
@@ -222,7 +244,7 @@ export class playercontroller extends Component {
     if (type == 1) {
       prefab = this.gridItem1;
       gridSize = new Size(160, 40);
-      offset = -this.gridSize / 2 + 4; // 0.25 => 0.35 0.1 * 40 = 4
+      offset = -this.gridSize / 2; // 0.25 => 0.35 0.1 * 40 = 4
     } else if (type == 2) {
       gridSize = new Size(80, 80);
       prefab = this.gridItem2;

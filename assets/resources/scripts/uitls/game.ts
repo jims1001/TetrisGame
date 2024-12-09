@@ -115,6 +115,16 @@ export function getLastRowIndices(gridCenters: Vec2[][]): number[][] {
   return indices;
 }
 
+// 获取左边的索引
+export function getFirstColumnIndexes(array: any[][]): [number, number][] {
+  return array.map((_, rowIndex) => [rowIndex, 0]);
+}
+
+// 获取右边的索引
+export function getLastColumnIndexes(array: any[][]): [number, number][] {
+  return array.map((_, rowIndex) => [rowIndex, array[rowIndex].length - 1]);
+}
+
 /**
  * 将二维数组转换为字符串键数组
  * @param array 二维数组

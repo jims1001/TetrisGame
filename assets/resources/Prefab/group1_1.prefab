@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "group1",
+    "_name": "group1_1",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "group1",
+    "_name": "group1_1",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -45,8 +45,8 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -289.257,
-      "y": 462.0620000000001,
+      "x": -93.75,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -1857,7 +1857,7 @@
     "fileId": "0ehwQGHk1DjKkFun+BO5E/"
   },
   {
-    "__type__": "c455bcuraBHRr5UxJV+ekwJ",
+    "__type__": "cc.Sprite",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -1868,33 +1868,38 @@
     "__prefab": {
       "__id__": 77
     },
-    "type": 1,
-    "stepSize": 40,
-    "stepSpeed": 1,
-    "isSelected": false,
-    "values": [
-      1,
-      1,
-      1,
-      1
-    ],
-    "item1": {
-      "__id__": 2
+    "_customMaterial": null,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
     },
-    "item2": {
-      "__id__": 20
+    "_spriteFrame": {
+      "__uuid__": "7d8f9b89-4fd1-4c9f-a3ab-38ec7cded7ca@f9941",
+      "__expectedType__": "cc.SpriteFrame"
     },
-    "item3": {
-      "__id__": 38
+    "_type": 0,
+    "_fillType": 0,
+    "_sizeMode": 0,
+    "_fillCenter": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
     },
-    "item4": {
-      "__id__": 56
-    },
+    "_fillStart": 0,
+    "_fillRange": 0,
+    "_isTrimmedMode": true,
+    "_useGrayscale": false,
+    "_atlas": null,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "b9X+j1d7FAQZP76e/8r9d4"
+    "fileId": "6dzDHzBb1AL5kE8Ws/WAqA"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1905,7 +1910,6 @@
       "__id__": 0
     },
     "fileId": "5f+Gcl1ZtMm5RnJ6Cmt6c9",
-    "instance": null,
-    "targetOverrides": null
+    "instance": null
   }
 ]

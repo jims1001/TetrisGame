@@ -5,12 +5,16 @@ const { ccclass } = _decorator;
 export class GameManager {
   private static _instance: GameManager | null = null;
 
-  // 游戏状态
   private _isGameRunning: boolean = false; // 游戏是否正在运行
   private _currentLevel: number = 1; // 当前关卡
   private _score: number = 0; // 当前分数
 
-  // 获取单例实例
+  // 定时器回调
+  public onTimerTick = (): void => {};
+
+  /// 全局一个定时器
+  private _timer: TimerManager = TimerManager.getInstance();
+
   public static get instance(): GameManager {
     if (!this._instance) {
       this._instance = new GameManager();
@@ -24,8 +28,17 @@ export class GameManager {
   // 游戏状态管理方法
   public startGame(): void {
     this._isGameRunning = true;
+    this._timer.startTimer(this.__onTimerTick, 1);
     console.log("Game started");
   }
+
+  private __onTimerTick = (): void => {
+    if (this.onTimerTick) {
+      this.onTimerTick();
+    }
+
+    console.log("Timer tick!");
+  };
 
   public pauseGame(): void {
     this._isGameRunning = false;
@@ -36,7 +49,6 @@ export class GameManager {
     return this._isGameRunning;
   }
 
-  // 分数管理
   public addScore(points: number): void {
     this._score += points;
     console.log(`Score updated: ${this._score}`);
@@ -45,8 +57,6 @@ export class GameManager {
   public getScore(): number {
     return this._score;
   }
-
-  // 关卡管理
   public nextLevel(): void {
     this._currentLevel++;
     console.log(`Level up! Current level: ${this._currentLevel}`);
